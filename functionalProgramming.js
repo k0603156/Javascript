@@ -72,7 +72,7 @@ function take(length, iter) {
   return res;
 }
 
-function reduce(f, acc, iter) {
+let reduce = (f, acc, iter) => {
   for (const v of iter) {
     acc = f(acc, v);
   }
@@ -81,11 +81,45 @@ function reduce(f, acc, iter) {
 
 const add = (a, b) => a + b;
 
-const funcF = (list, length) =>
+let funcF = (list, length) =>
   reduce(add, 0,
     take(length,
       map(v => v * v,
         filter(v => v % 2, list))))
 
 log(funcF(list, 3));
+console.groupEnd();
+
+console.group("넘겨받은 함수를 순차적으로 실행");
+
+let go = (a, ...fs) => reduce((a, f) => f(a), a, fs);
+
+go(10, a => a + 10, a => a + 1, log);
+
+console.groupEnd();
+
+console.group("reduce 가변인자");
+
+reduce = function (f, acc, iter) {
+  if (arguments.length == 2) {
+    iter = acc[Symbol.iterator]();
+    acc = iter.next().value;
+  }
+  for (const v of iter) {
+    acc = f(acc, v);
+  }
+  return acc;
+}
+log(reduce(add, list))
+// go = (...as) => reduce((a, f) => f(a), as);
+
+// funcF = (list, length) => go(
+//   list,
+//   list => filter(v => v % 2, list),
+//   list => map(v => v * v, list),
+//   list => take(length, list),
+//   list => reduce(add, 0, list)
+// );
+// log(funcF(list, 2));
+
 console.groupEnd();
