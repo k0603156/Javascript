@@ -1,0 +1,9 @@
+{
+  "eslint.autoFixOnSave": true,
+  "eslint.enable": true,
+  "[javascript]": {
+    "editor.formatOnSave": false,
+    "editor.renderWhitespace": "all",
+    "editor.acceptSuggestionOnEnter": "off"
+  }
+}
