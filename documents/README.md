@@ -129,3 +129,42 @@ Note: 외부 스크립트 경우 async 속성을 사용하면 되기 때문에 �
 이것이 async 속성을 사용해야 하는 이유입니다.
 
 Note: 자바스크립트의 비동기 개념은 이해하는데 시간이 오래 걸리기 때문에, 지금 이해되지 않는다면 현재 단계에선 외부 스크립트 방식만 사용하고 넘어가도 무방합니다.
+
+#### async & defer
+
+더 깊게 들어가보면 이러한 코드문제를 해결하기 위한 방법은 실제로 두가지가 있습니다. — async 와defer 입니다. 두 가지의 차이를 봅시다.
+
+async 스크립트는 페이지 렌더링의 중단 없이 스크립트를 다운로드 하고, 또한 스크립트의 다운로드가 끝나자 마자 이를 실행시킵니다. async는 외부 스크립트끼리의 구체적인 실행 순서는 보장하지 않고, 단지 나머지 페이지가 나타나는 동안 스크립트가 비동기방식으로 다운로드 되어 중단되지 않는다는 것만 보장합니다. async는 각각의 스크립트가 독립적으로, 서로에게 의존하지 않는 관계일 때 적절합니다.
+
+아래의 예제를 보시죠:
+
+```javascript
+<script async src="js/vendor/jquery.js"></script>
+
+<script async src="js/script2.js"></script>
+
+<script async src="js/script3.js"></script>
+```
+
+3개의 스크립트를 로딩하지만 이들의 순서는 보장할 수 없습니다.
+이는 script2.js나 script3.js에 있는 함수가 jquery.js의 함수를 사용한다면 에러를 발생될 수 있다는 것을 의미합니다.
+
+Defer는 이와 다르게 순서대로 다운로드 한 후 모든 스크립트와 내용이 다운로드 되었을 때 실행됩니다:
+
+```javascript
+<script defer src="js/vendor/jquery.js"></script>
+
+<script defer src="js/script2.js"></script>
+
+<script defer src="js/script3.js"></script>
+```
+
+따라서 위의 예제의 경우에는 jquery.js -> script2.js -> script3.js 의 순서가 보장됩니다.
+
+```
+요약 :
+
+만약 scirpt들이 각각의 스크립트에 의존하지 않고 독립적으로 파싱되도 상관없다면, async 를 사용합니다.
+먄약 sciprt들이 의존하고 하나의 스크립트가 파싱될때까지 기다려야 한다면,
+defer 를 사용하고 각각의 <script> 태그들을 실행되길 원하는 순서대로 작성합니다.
+```
