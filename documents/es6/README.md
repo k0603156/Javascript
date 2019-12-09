@@ -30,3 +30,11 @@ JavaScript의 표준은 ECMAScript입니다.
 #### Spread Operator(전개 연산자, Spread 표현식)
 
 #### Symbol
+
+### Map / WeakMap
+
+#### Set / WeakSet
+
+#### Array.find, Array.findIndex()
+
+#### Exponentiation (지수화, 거듭제곱)
