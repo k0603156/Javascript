@@ -28,3 +28,5 @@ JavaScript의 표준은 ECMAScript입니다.
 #### Promise
 
 #### Spread Operator(전개 연산자, Spread 표현식)
+
+#### Symbol
