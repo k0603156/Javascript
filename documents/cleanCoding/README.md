@@ -49,3 +49,38 @@ Coding 표준, 아키텍쳐 표준 및 설계 가이드를 준수하라
 html in php
 what the hell.....
 ```
+
+#### Class Design - SOLID
+
+##### Simple Responsibility Principle(SRP)
+
+```
+하나의 클래스는 하나의 책임만 가져야 한다
+```
+
+##### Open/Closed Principle(OCP)
+
+```
+클래스는 확장에 대하여 열려 있어야 하고,
+변경에 대해서는 닫혀 있어야 한다.
+```
+
+##### Liskov Substitution Principle(LSP)
+
+```
+파생 클래스의 메소드는 기반 클래스의 메서드를
+대체하여 사용될 수 있어야 한다.
+```
+
+##### Interface Segregation Principle(ISP)
+
+```
+클라이언트가 사용하지 않는 메소드에 의존하지 않아야 한다.
+```
+
+##### Dependency Inversion Principle(DIP)
+
+```
+추상화 된 것은 구체적인 것에 의존하면 안된다.
+-자주 변경되는 구체적인 것에 의존하지 않고 추상화 된 것을 참조
+```
