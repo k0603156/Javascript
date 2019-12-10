@@ -129,13 +129,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/k0603156/js-training.git"
+    "url": "git+https://github.com/k0603156/Javascript.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/k0603156/js-training/issues"
+    "url": "https://github.com/k0603156/Javascript/issues"
   },
-  "homepage": "https://github.com/k0603156/js-training#readme",
+  "homepage": "https://github.com/k0603156/Javascript#readme",
   "description": ""
 }
