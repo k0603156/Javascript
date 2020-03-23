@@ -6,7 +6,7 @@
     "acorn-jsx": "^5.0.2",
     "ajv": "^6.10.2",
     "ansi-regex": "^4.1.0",
-    "acorn": "^7.1.0",
+    "acorn": "^7.1.1",
     "argparse": "^1.0.10",
     "ansi-styles": "^3.2.1",
     "brace-expansion": "^1.1.11",
