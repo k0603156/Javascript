@@ -100,6 +100,7 @@ while (True):
         print("%s*%s=%s"%(num,x,num*x))
     if input("next: Y ")!="Y": break
 '''
+'''
 
 listA =["국어","영어",1,43.3,True]
 listA.append(1)
@@ -135,3 +136,35 @@ listD.clear()
 listE=[[] for j in range(10)]
 
 print(listE)
+
+'''
+SIZE=5
+score=[]
+rank=[]
+for x in range(SIZE):
+    temp=int(input(str(x+1)+"번 점수 입력:"))
+    score.append(temp)
+    rank.append(1)
+    
+#등수계산
+for x in range(len(score)):
+    for y in range(len(score)):
+        if score[x] < score[y]: rank[x] +=1
+#확인
+for x in range(len(score)):
+    print("{}점:{}등".format(score[x], rank[x]))
+
+SIZE2=5
+score2={}
+rank2=[]
+
+for x in range(SIZE2):
+    temp2 = int(input(str(x+1) +"번 점수 입력:"))
+    score2[temp2]=1
+
+for x in score2.keys():
+    for y in score2.keys():
+        if x < y : score2[x] +=1
+
+for x in range(score2.keys()):
+    print("{}점:{}등".format(x,score[x]))
