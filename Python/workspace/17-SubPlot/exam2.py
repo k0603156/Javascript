@@ -24,12 +24,12 @@ col_list = list(df.columns)
 df.drop(['경기', '강원', '충북', '충남',
                  '전북', '전남', '경북', '경남', '제주', 
                  '광주', '대전', '울산', '세종'], axis=1, inplace=True)
-'''print(df)
+print(df)
 print('-' * 30)
 
 print(df['서울'])
 print('-' * 30)
-'''
+
 pyplot.rcParams['font.family'] = 'Malgun Gothic'
 pyplot.rcParams['font.size'] = 16
 pyplot.rcParams['figure.figsize'] = (20, 5)
@@ -41,11 +41,10 @@ ax3 = fig.add_subplot(1, 4, 3)
 ax4 = fig.add_subplot(1, 4, 4)
 
 #print(df.columns)
-'''
 df.boxplot(['서울'], ax=ax1)
 df.boxplot(['부산'], ax=ax2)
 df.boxplot(['대구'], ax=ax3)
-df.boxplot(['인천'], ax=ax4)'''
+df.boxplot(['인천'], ax=ax4)
 
 pyplot.show()
 
