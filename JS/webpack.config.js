@@ -19,5 +19,14 @@ module.exports = (buildPath) => {
     entry,
     output,
     plugins: [new HtmlWebpackPlugin(htmlPluginOption)],
+    module: {
+      rules: [
+        {
+          test: [/\.js$/],
+          exclude: /node_modules/,
+          loader: require.resolve("babel-loader"),
+        },
+      ],
+    },
   };
 };

@@ -1,9 +1,47 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Getting Started</title>
+    <meta charset="UTF-8" />
+    <title>Circle List</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      .square {
+        position: absolute;
+        transition: all 0.25s linear;
+        border: 1px solid #000;
+      }
+      .circle-container {
+        position: relative;
+        border-radius: 50%;
+        border: 20px solid #000;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .btn-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+      }
+      button {
+        width: 60px;
+        height: 60px;
+      }
+    </style>
   </head>
+
   <body>
-    <script src="./index.js"></script>
+    <div class="btn-container">
+      <button id="next-btn">Next</button>
+      <button id="prev-btn">Prev</button>
+    </div>
   </body>
 </html>
