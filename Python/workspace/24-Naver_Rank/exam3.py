@@ -6,13 +6,6 @@ Created on Fri May  1 17:44:45 2020
 """
 
 
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May  1 16:45:18 2020
-
-@author: kimyongkuk
-"""
-
 import os
 import requests
 import datetime as dt
