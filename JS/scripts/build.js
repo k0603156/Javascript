@@ -14,18 +14,18 @@ const wp = require("webpack");
 
 const wpConfigFactory = require("../webpack.config");
 
-const [nodePath, selfPath, dirPath] = process.argv;
+const [nodePath, selfPath, dirName] = process.argv;
 
-const buildPath = (relativePath) =>
-  path.resolve(fs.realpathSync(process.cwd()), relativePath);
-
+const buildPath = (dirname) => {
+  return path.resolve(fs.realpathSync(process.cwd()), './src/', dirname);
+}
 (async () => {
   try {
-    if (!dirPath) {
-      throw Error("yan build --dirPath: dirPath가 존재하지 않습니다.");
+    if (!dirName) {
+      throw Error("yan build --dirName: dirName 존재하지 않습니다.");
     }
-    wp(wpConfigFactory(buildPath(dirPath))).run();
+    wp(wpConfigFactory(buildPath(dirName))).run();
   } catch (error) {
-    console.log(chalk.red(error));
+    console.error(chalk.red(error));
   }
 })();
