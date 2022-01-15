@@ -27,7 +27,7 @@ class Enum {
 class Field {
     constructor(defaultValue) {
         const self = this;
-        self.get = (_) => self.v;
+        self.get = _ => this.deco ? this.deco(self.v) : self.v;
         self.set = (newValue) => {
             if (!self.typeValidation(newValue)) throw "invalid type: " + newValue;
             if (self.validator && !self.validator(newValue))
@@ -43,6 +43,9 @@ class Field {
     }
     fromJSON(v) {
         return v;
+    }
+    decorator(v) {
+        this.deco = v;
     }
     typeValidation() {
         throw "must be override!";
@@ -279,7 +282,7 @@ class Entity {
 class FruitsBasket extends Entity {
     constructor() {
         super();
-        this.string("name");
+        this.string("name").decorator(v => "username's " + v);
         this.enumList("fruits", new Enum("kiwi", "banana", "orange"));
     }
 }
@@ -287,6 +290,7 @@ const basket = (new FruitsBasket).parse({
     "name": "favorite",
     "fruits": ["kiwi", "banana"]
 });
+console.log(basket.name) // username's favorite
 console.log(JSON.stringify(basket));
 
 class Div extends Entity {
