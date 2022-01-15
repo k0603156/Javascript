@@ -121,12 +121,43 @@ class Entity {
             configurable: false,
         });
     }
+    static union(base, ...sub) {
+        if(!sub.every(cls=>cls.prototype instanceof base)) throw "invalid subclass";
+        const parse = json => {
+          let target;
+          if(!sub.some(cls => {
+            target = new cls;
+            return Object.entries(target._fields).every(([key, field]) => {
+              const jsonValue = json[key];
+              if(jsonValue == undefined && field.get() === undefined) return false;
+              else{
+                target[key] = field.fromJSON(jsonValue);
+                return true;
+              }
+            });
+          })) throw "no matched sub class";
+          return target;
+        };
+        Object.defineProperty(base, "parse", {
+            enumerable: false,
+            writable: false,
+            configurable: false,
+            value:parse,
+        });
+        Object.defineProperty(base.prototype, "parse", {
+            enumerable: false,
+            writable: false,
+            configurable: false,
+            value:parse,
+        });
+    }
     parse(json) {
         Object.entries(this._fields).forEach(([key, field]) => {
             const jsonValue = json[key];
-            if(jsonValue == undefined) throw 'no key in json: ' + key;
-            this[key] = field.fromJSON(jsonValue);
-        })
+            if(jsonValue == undefined) {
+                if(field.get() === undefined) throw 'no key in json:' + key;
+            } else this[key] = field.fromJSON(jsonValue); 
+        });
         return this;
     }
     toJSON() {
@@ -164,6 +195,47 @@ class Entity {
         return this.define(field, new EntityMapField(targetClass));
     }
 };
+class Div extends Entity {
+    constructor() {
+        super();
+        this.string("title");
+    }
+};
+class Group extends Div {
+    constructor() {
+        super();
+        this.entityList("sub", Div);
+    }
+};
+class Team extends Div {
+    constructor() {
+        super();
+        this.stringList("member");
+    }
+};
+Entity.union(Div, Group, Team);
+const div = Div.parse({
+    "title": "개발실",
+    "sub": [
+        {
+            "title": "FE팀",
+            "sub": [
+                {
+                    "title": "FE팀1",
+                    "member": ["kim", "oy"],
+                },
+            ],
+        },
+        {
+            "title": "BE팀",
+            "member": ["jin", "ji"],
+        },
+    ],
+});
+console.log(JSON.stringify(div));
+
+//   div instanceof Group //true
+// div.sub[0] instanceof Group //true
 class Partner extends Entity {
     constructor() {
         super();
