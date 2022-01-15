@@ -3,15 +3,37 @@ const mapValue = (target, block) => {
         Object.entries(target).map(([key, value]) => [key, block(value)])
     );
 };
+class Enum {
+    constructor(...values) {
+        Object.defineProperty(this, "_values", {
+            value: values,
+            enumerable: false,
+            writable: false,
+            configurable: false,
+        });
+        values.forEach((v) =>
+            Object.defineProperty(this, v, {
+                value: v,
+                enumerable: false,
+                writable: false,
+                configurable: false,
+            })
+        );
+    }
+    isValid(v) {
+        return this._values.indexOf(v) > -1;
+    }
+}
 class Field {
     constructor(defaultValue) {
         const self = this;
-        self.get = _ => self.v;
-        self.set = newValue => {
-            if(!self.typeValidation(newValue)) throw "invalid type: " + newValue;
-            if(self.validator && !self.validator(newValue)) throw "invalid validation: " + newValue;
+        self.get = (_) => self.v;
+        self.set = (newValue) => {
+            if (!self.typeValidation(newValue)) throw "invalid type: " + newValue;
+            if (self.validator && !self.validator(newValue))
+                throw "invalid validation: " + newValue;
             self.v = newValue;
-        }
+        };
     }
     default(v) {
         this.set(v);
@@ -22,58 +44,67 @@ class Field {
     fromJSON(v) {
         return v;
     }
-    typeValidation() { 
+    typeValidation() {
         throw "must be override!";
     }
     validation(validator) {
         this.validator = validator;
         return this;
     }
-};
+}
 class StringField extends Field {
     typeValidation(v) {
         return typeof v == "string";
     }
-};
+}
 class StringListField extends Field {
     typeValidation(v) {
-        return v instanceof Array && v.every(item => typeof item == "string");
+        return v instanceof Array && v.every((item) => typeof item == "string");
     }
-};
+}
 class NumberField extends Field {
     typeValidation(v) {
         return typeof v == "number";
     }
-};
+}
 class NumberListField extends Field {
     typeValidation(v) {
-        return v instanceof Array && v.every(item => typeof item == "number");
+        return v instanceof Array && v.every((item) => typeof item == "number");
     }
-};
+}
 class DateField extends Field {
     typeValidation(v) {
         return v instanceof Date;
     }
     toJSON() {
-        if(this.v && 'toISOString' in this.v) return this.v.toISOString();
+        if (this.v && "toISOString" in this.v) return this.v.toISOString();
         return this.v;
     }
     fromJSON(v) {
         return new Date(v);
     }
-};
+}
 class DateMapField extends Field {
     typeValidation(v) {
-        return !(v instanceof Array) && typeof v == "object" && Object.values(v).every(item => item instanceof Date);
+        return (
+            !(v instanceof Array) &&
+            typeof v == "object" &&
+            Object.values(v).every((item) => item instanceof Date)
+        );
     }
     toJSON() {
-        if(this.v && this.v instanceof Array) return mapValue(this.v, v => this.v, v => v.toISOString());
+        if (this.v && this.v instanceof Array)
+            return mapValue(
+                this.v,
+                (v) => this.v,
+                (v) => v.toISOString()
+            );
         return this.v;
     }
     fromJSON(v) {
-        return mapValue(v, v => new Date(v));
+        return mapValue(v, (v) => new Date(v));
     }
-};
+}
 class EntityField extends Field {
     constructor(cls) {
         super();
@@ -83,35 +114,70 @@ class EntityField extends Field {
         return v instanceof this.cls;
     }
     fromJSON(v) {
-        const result = new this.cls;
+        const result = new this.cls();
         result.parse(v);
         return result;
     }
-};
+}
 class EntityListField extends Field {
     constructor(cls) {
         super();
         this.cls = cls;
     }
     typeValidation(v) {
-        return v instanceof Array && v.every(item => item instanceof this.cls);
+        return v instanceof Array && v.every((item) => item instanceof this.cls);
     }
     fromJSON(v) {
-        return v.map(json => (new this.cls).parse(json));
+        return v.map((json) => new this.cls().parse(json));
     }
-};
+}
 class EntityMapField extends Field {
     constructor(cls) {
         super();
         this.cls = cls;
     }
     typeValidation(v) {
-        return !(v instanceof Array) && typeof v == "object" && Object.values().every(item => item instanceof this.cls);
+        return (
+            !(v instanceof Array) &&
+            typeof v == "object" &&
+            Object.values().every((item) => item instanceof this.cls)
+        );
     }
     fromJSON(v) {
-        return mapValue(v, json => (new this.cls).parse(json));
+        return mapValue(v, (json) => new this.cls().parse(json));
     }
-};
+}
+class EnumField extends Field {
+    constructor(en) {
+        super();
+        this.en = en;
+    }
+    typeValidation(v) {
+        return this.en.isValid(v);
+    }
+}
+class EnumListField extends Field {
+    constructor(en) {
+        super();
+        this.en = en;
+    }
+    typeValidation(v) {
+        return v.every((item) => this.en.isValid(item));
+    }
+}
+class EnumMapField extends Field {
+    constructor(en) {
+        super();
+        this.en = en;
+    }
+    typeValidation(v) {
+        return (
+            !(v instanceof Array) &&
+            typeof v == "object" &&
+            Object.values().every((item) => this.en.isValid(item))
+        );
+    }
+}
 class Entity {
     constructor() {
         Object.defineProperty(this, "_fields", {
@@ -122,41 +188,46 @@ class Entity {
         });
     }
     static union(base, ...sub) {
-        if(!sub.every(cls=>cls.prototype instanceof base)) throw "invalid subclass";
-        const parse = json => {
-          let target;
-          if(!sub.some(cls => {
-            target = new cls;
-            return Object.entries(target._fields).every(([key, field]) => {
-              const jsonValue = json[key];
-              if(jsonValue == undefined && field.get() === undefined) return false;
-              else{
-                target[key] = field.fromJSON(jsonValue);
-                return true;
-              }
-            });
-          })) throw "no matched sub class";
-          return target;
+        if (!sub.every((cls) => cls.prototype instanceof base))
+            throw "invalid subclass";
+        const parse = (json) => {
+            let target;
+            if (
+                !sub.some((cls) => {
+                    target = new cls();
+                    return Object.entries(target._fields).every(([key, field]) => {
+                        const jsonValue = json[key];
+                        if (jsonValue == undefined && field.get() === undefined)
+                            return false;
+                        else {
+                            target[key] = field.fromJSON(jsonValue);
+                            return true;
+                        }
+                    });
+                })
+            )
+                throw "no matched sub class";
+            return target;
         };
         Object.defineProperty(base, "parse", {
             enumerable: false,
             writable: false,
             configurable: false,
-            value:parse,
+            value: parse,
         });
         Object.defineProperty(base.prototype, "parse", {
             enumerable: false,
             writable: false,
             configurable: false,
-            value:parse,
+            value: parse,
         });
     }
     parse(json) {
         Object.entries(this._fields).forEach(([key, field]) => {
             const jsonValue = json[key];
-            if(jsonValue == undefined) {
-                if(field.get() === undefined) throw 'no key in json:' + key;
-            } else this[key] = field.fromJSON(jsonValue); 
+            if (jsonValue == undefined) {
+                if (field.get() === undefined) throw "no key in json:" + key;
+            } else this[key] = field.fromJSON(jsonValue);
         });
         return this;
     }
@@ -164,26 +235,26 @@ class Entity {
         return this._fields;
     }
     define(field, descriptor) {
-        Object.defineProperty(this, field, this._fields[field] = descriptor);
+        Object.defineProperty(this, field, (this._fields[field] = descriptor));
         return descriptor;
     }
     string(field) {
-        return this.define(field, new StringField);
+        return this.define(field, new StringField());
     }
     stringList(field) {
-        return this.define(field, new StringListField);
+        return this.define(field, new StringListField());
     }
     number(field) {
-        return this.define(field, new NumberField);
+        return this.define(field, new NumberField());
     }
     numberList(field) {
-        return this.define(field, new NumberListField);
+        return this.define(field, new NumberListField());
     }
     date(field) {
-        return this.define(field, new DateField);
+        return this.define(field, new DateField());
     }
     dateMap(field) {
-        return this.define(field, new DateMapField)
+        return this.define(field, new DateMapField());
     }
     entity(field, targetClass) {
         return this.define(field, new EntityField(targetClass));
@@ -194,41 +265,64 @@ class Entity {
     entityMap(field, targetClass) {
         return this.define(field, new EntityMapField(targetClass));
     }
-};
+    enum(field, en) {
+        return this.define(field, new EnumField(en));
+    }
+    enumList(field, en) {
+        return this.define(field, new EnumListField(en));
+    }
+    enumMap(field, en) {
+        return this.define(field, new EnumMapField(en));
+    }
+}
+
+class FruitsBasket extends Entity {
+    constructor() {
+        super();
+        this.string("name");
+        this.enumList("fruits", new Enum("kiwi", "banana", "orange"));
+    }
+}
+const basket = (new FruitsBasket).parse({
+    "name": "favorite",
+    "fruits": ["kiwi", "banana"]
+});
+console.log(JSON.stringify(basket));
+
 class Div extends Entity {
     constructor() {
         super();
         this.string("title");
     }
-};
+}
 class Group extends Div {
     constructor() {
         super();
         this.entityList("sub", Div);
     }
-};
+}
 class Team extends Div {
     constructor() {
         super();
         this.stringList("member");
     }
-};
+}
 Entity.union(Div, Group, Team);
 const div = Div.parse({
-    "title": "개발실",
-    "sub": [
+    title: "개발실",
+    sub: [
         {
-            "title": "FE팀",
-            "sub": [
+            title: "FE팀",
+            sub: [
                 {
-                    "title": "FE팀1",
-                    "member": ["kim", "oy"],
+                    title: "FE팀1",
+                    member: ["kim", "oy"],
                 },
             ],
         },
         {
-            "title": "BE팀",
-            "member": ["jin", "ji"],
+            title: "BE팀",
+            member: ["jin", "ji"],
         },
     ],
 });
@@ -241,43 +335,47 @@ class Partner extends Entity {
         super();
         this.string("name");
     }
-};
+}
 class Member extends Entity {
     constructor() {
         super();
-        this.string("name").validation(v => 2 <= v.length && v.length <= 10).default("___");
-        this.number("age").validation(v => 15 <= v && v <= 50).default(15);
+        this.string("name")
+            .validation((v) => 2 <= v.length && v.length <= 10)
+            .default("___");
+        this.number("age")
+            .validation((v) => 15 <= v && v <= 50)
+            .default(15);
         this.date("birth");
         this.stringList("dev");
-        this.dateMap('events');
+        this.dateMap("events");
         this.entity("partner", Partner);
         this.entityList("friends", Member);
     }
-};
+}
 
-const member = new Member;
+const member = new Member();
 member.parse({
     name: "kim",
     age: 19,
     birth: "1992-11-27T00:00:00.000Z",
-    dev: ['js'],
+    dev: ["js"],
     events: {
-        "sleep": "2000-01-01T00:00:00.000Z",
+        sleep: "2000-01-01T00:00:00.000Z",
     },
     partner: {
-        "name": "jin",
+        name: "jin",
     },
     friends: [
         {
             name: "ji",
             age: 30,
             birth: "2000-01-01T00:00:00.000Z",
-            dev: ['python'],
+            dev: ["python"],
             events: {
-                "sleep": "2000-01-01T00:00:00.000Z",
+                sleep: "2000-01-01T00:00:00.000Z",
             },
             partner: {
-                "name": "jin",
+                name: "jin",
             },
             friends: [],
         },
@@ -285,15 +383,15 @@ member.parse({
             name: "jin",
             age: 31,
             birth: "2000-01-01T00:00:00.000Z",
-            dev: ['python'],
+            dev: ["python"],
             events: {
-                "sleep": "2000-01-01T00:00:00.000Z",
+                sleep: "2000-01-01T00:00:00.000Z",
             },
             partner: {
-                "name": "ji",
+                name: "ji",
             },
             friends: [],
-        }
-    ]
+        },
+    ],
 });
 console.log(JSON.stringify(member));
